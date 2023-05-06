@@ -2,9 +2,18 @@ import React, {useEffect} from 'react';
 import {ErrorMessage, Field, Form, Formik} from "formik";
 import * as Yup from "yup";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const validationSchema = Yup.object({
-    username: Yup.string().required(' username is required'),
+    username: Yup.string().required(' username is required')
+        .test('username-match', 'matched username', async function (username) {
+                return axios.get("http://localhost:8080/user/check/" + username).then(
+                    () => true
+                ).catch(
+                    () => false
+                )
+            }
+        ),
     password: Yup.string().required(' Password is required'),
     repeatedPassword: Yup.string().required(' enter Repeated Password')
         .test('passwords-match', ' Passwords must match', function (value) {
@@ -23,8 +32,8 @@ function RegisterForm(props) {
         role: {
             id: ''
         }
-
     })
+    let navigate = useNavigate();
     const [roles, setRoles] = React.useState([])
     useEffect(() => {
         axios.get("http://localhost:8080/user/roles").then(
@@ -36,7 +45,11 @@ function RegisterForm(props) {
     const onSubmit = (props, action) => {
         console.log(props)
         action.resetForm()
-        axios.post("http://localhost:8080/user/register", props).then()
+        axios.post("http://localhost:8080/user/register", props).then(
+            (data) => {
+                navigate('/login')
+            }
+        )
     }
     return (
         <Formik
@@ -62,7 +75,7 @@ function RegisterForm(props) {
                             console.log(role)
                             return (
                                 <label key={role.id}>
-                                    <Field type="radio" name="role.id" value={role.id+''}/>
+                                    <Field type="radio" name="role.id" value={role.id + ''}/>
                                     {role.name}
                                 </label>
                             )
