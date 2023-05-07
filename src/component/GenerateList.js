@@ -3,7 +3,7 @@ import axios from "axios";
 import {ErrorMessage, Field, Form, Formik} from "formik";
 
 function GenerateList(props) {
-    const {user, product, setProduct, message, categories} = props
+    const {user, setCart, setProduct, message, categories} = props
     const isSeller = user.role.name === "SELLER"
     const seller_id = isSeller ? "/" + user.id : ""
     const [products, setProducts] = React.useState([])
@@ -25,13 +25,14 @@ function GenerateList(props) {
 
     function updateForm(event, id) {
         axios.get("http://localhost:8080/product/get/" + id).then(
-                data => {
+            data => {
                 setProduct(data.data)
             })
     }
-    function deleteProd(event,id){
+
+    function deleteProd(event, id) {
         axios.delete("http://localhost:8080/product/delete/" + id).then(
-            data=>{
+            data => {
                 setProductSearch({
                     name: '',
                     minPrice: '',
@@ -41,6 +42,31 @@ function GenerateList(props) {
             }
         )
     }
+
+    function addCart(event, productToAdd) {
+        console.log(productToAdd)
+        setCart(
+            prevCart => {
+                let productIndex=prevCart.findIndex((productInCart)=>productInCart.id===productToAdd.id);
+                if(productIndex === -1){
+                    prevCart.push({
+                        ...productToAdd,
+                        number:1
+                    })
+                }else {
+                    console.log(prevCart[productIndex])
+                    prevCart[productIndex] = {
+                        ...productToAdd,
+                        number: (prevCart[productIndex].number +1)
+                    }
+                }
+                return ([
+                    ...prevCart,
+                ])
+            }
+        )
+    }
+
     return (
         <div>
             <h1>SearchForm</h1>
@@ -83,8 +109,12 @@ function GenerateList(props) {
                         <td>{product.name}</td>
                         <td>{product.price}</td>
                         <td>
-                            {isSeller && <button onClick={event => updateForm(event, product.id)}> Update {product.id} </button>}
-                            {isSeller && <button onClick={event=> deleteProd(event,product.id)} >Delete {product.id}</button>}
+                            {isSeller &&
+                                <button onClick={event => updateForm(event, product.id)}> Update {product.id} </button>}
+                            {isSeller &&
+                                <button onClick={event => deleteProd(event, product.id)}>Delete {product.id}</button>}
+                            {isSeller ||
+                                <button onClick={event => addCart(event, product)}>Add {product.id} to Cart</button>}
                         </td>
                         <td>
                             {product.categories.map(category =>
