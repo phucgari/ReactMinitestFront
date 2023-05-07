@@ -9,7 +9,7 @@ const validationSchema = Yup.object({
     price: Yup.string().required()
 })
 function SellerForm(props) {
-    const {user} = props
+    const {user,categories,setCategories} = props
     const [product, setProduct] = React.useState(
         {
             name: "",
@@ -18,7 +18,6 @@ function SellerForm(props) {
             owner: {...user}
         }
     )
-    const [categories, setCategories] = React.useState([])
     const [message,setMessage]=React.useState('')
     useEffect(() => {
         axios.get("http://localhost:8080/product/categories").then(
@@ -28,11 +27,19 @@ function SellerForm(props) {
         )
     }, [message])
     function onSubmit(data,action){
-        console.log(data)
-        axios.post("http://localhost:8080/product/create",data).then(r =>{})
+        if(data.id===""){
+            axios.post("http://localhost:8080/product/create",data).then(r =>{
+                setMessage(`created ${data.name}`)
+            })
+        }else{
+            axios.put("http://localhost:8080/product/update",data).then(r=>{
+                setMessage(`update ${data.name}`)
+            })
+        }
         action.resetForm()
-        setMessage(`created ${data.name}`)
     }
+
+    console.log(product)
     return (
         <div>
             seller
@@ -55,7 +62,7 @@ function SellerForm(props) {
                         (category) =>
                             <React.Fragment key={category.id}>
                                 <label>
-                                    <Field type="checkbox" name="categories" value={category.id+''}/>
+                                    <Field type="checkbox" name="categories" value={category.id+''} checked={product.categories.find(e=>e.name===category.name)}/>
                                     {category.name}
                                 </label>
                                 <br/>
@@ -66,9 +73,11 @@ function SellerForm(props) {
             </Formik>
             <p>{message}</p>
             <GenerateList
-            setProduct={setProduct}
             user={user}
             message={message}
+            categories={categories}
+            product={product}
+            setProduct={setProduct}
             />
         </div>
     );

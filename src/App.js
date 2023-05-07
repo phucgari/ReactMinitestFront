@@ -15,6 +15,7 @@ function App() {
             id:''
         }
     })
+    const [categories, setCategories] = React.useState([])
     return (
         <BrowserRouter>
             <Routes>
@@ -27,10 +28,14 @@ function App() {
                 />
                 <Route path='/BUYER'
                        element={<BuyerForm
+                           categories={categories}
+                           setCategories={setCategories}
                            user={user}
                        />} />
                 <Route path='/SELLER'
                        element={<SellerForm
+                           categories={categories}
+                           setCategories={setCategories}
                            user={user}
                        />} />
             </Routes>
